@@ -13,6 +13,8 @@ services:
     depends_on:
       mysql-ts-container:
         condition: service_healthy
+      redis-ts-container:
+        condition: service_started
 
   mysql-ts-container:
     image: mysql:8.0
@@ -33,5 +35,16 @@ services:
       timeout: 5s
       retries: 10
 
+  redis-ts-container:
+    image: redis:7.2
+    container_name: ts-container-redis
+    restart: always
+    command: redis-server --requirepass redis_pass
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
 volumes:
   mysql_data:
+  redis_data:
