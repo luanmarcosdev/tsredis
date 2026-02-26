@@ -6,6 +6,6 @@ import { rateLimit } from './middlewares/redis-rate-limit';
 export const app = express();
 
 app.use(express.json());
-app.use(rateLimit(5, 20)); // limit to 5 requests per minute per IP
+app.use(rateLimit(10, 60)); // limit to 5 requests per minute per IP
 app.use('/api/', userRouter);
 app.use(errorHandler);

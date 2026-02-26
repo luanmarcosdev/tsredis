@@ -4,7 +4,7 @@ import { redisClient } from '../infra/cache/redis';
 export function rateLimit(maxRequests: number, windowSeconds: number) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const ip = req.ip;
-    const key = `rate_limit:${ip}:aa`;
+    const key = `rate_limit:${ip}`;
 
     const requests = await redisClient.incr(key);
 

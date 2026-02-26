@@ -1,6 +1,6 @@
 import { AppDataSource } from '../database/data-source';
 import { User } from '../database/entities/user.entity';
-import { IUserRepository } from './user.repository.interface';
+import { IUserRepository } from '../contracts/user-repository.interface';
 import { UserCreateDto } from "../dtos/user/create-user.dto.js";
 import { NotFoundError } from '../errors/not-found.error';
 import { UserUpdateDto } from '../dtos/user/update-user.dto';

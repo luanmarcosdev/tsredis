@@ -9,9 +9,11 @@ import { BadRequestError } from '../errors/bad-request.error';
 import { UserUpdateDto } from '../dtos/user/update-user.dto';
 import { userToUserResponseDto } from '../mappers/user.mapper'
 import { User } from '../database/entities/user.entity';
+import { RedisCacheProvider } from '../infra/cache/redis-cache.provider';
 
 const repository = new UserRepositoryMySQL();
-const service = new UserService(repository);
+const cacheProvider = new RedisCacheProvider();
+const service = new UserService(repository, cacheProvider);
 
 export class UserController {
 

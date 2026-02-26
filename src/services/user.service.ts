@@ -1,21 +1,38 @@
 import { User } from "../database/entities/user.entity";
-import { IUserRepository } from "../repositories/user.repository.interface";
+import { IUserRepository } from "../contracts/user-repository.interface";
 import { UserCreateDto } from "../dtos/user/create-user.dto";
 import { ConflictError } from "../errors/conflict.error";
 import { NotFoundError } from "../errors/not-found.error";
 import { BadRequestError } from "../errors/bad-request.error";
 import { UserUpdateDto } from "../dtos/user/update-user.dto";
+import { setTimeout } from 'timers/promises';
+import { CacheProvider } from "../contracts/cache-provider.interface";
 
 export class UserService {
     
-    constructor(private readonly userRepository: IUserRepository) {}
+    constructor(
+        private readonly userRepository: IUserRepository,
+        private readonly cacheProvider: CacheProvider
+    ) {}
     
     async getAll(): Promise<User[]> {
+
+        const cacheKey = 'users:all';
+        const cachedUsers = await this.cacheProvider.get(cacheKey);
+
+        if (cachedUsers) {
+            return JSON.parse(cachedUsers);
+        } 
+
+        await setTimeout(20000);
+
         const users = await this.userRepository.getAll();
 
         if (!users || users.length === 0) {
             throw new NotFoundError({ message: "No users found" });
         }
+
+        await this.cacheProvider.set(cacheKey, JSON.stringify(users), 60);
 
         return users;
     }
