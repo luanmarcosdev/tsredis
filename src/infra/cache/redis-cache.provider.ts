@@ -1,7 +1,7 @@
-import { CacheProvider } from "../../contracts/cache-provider.interface";
+import { ICacheProvider } from "../../contracts/cache-provider.interface";
 import { redisClient } from "./redis";
 
-export class RedisCacheProvider implements CacheProvider {
+export class RedisCacheProvider implements ICacheProvider {
     
     async get(key: string): Promise<string | null> {
         return await redisClient.get(key);

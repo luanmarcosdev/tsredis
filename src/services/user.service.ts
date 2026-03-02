@@ -6,13 +6,13 @@ import { NotFoundError } from "../errors/not-found.error";
 import { BadRequestError } from "../errors/bad-request.error";
 import { UserUpdateDto } from "../dtos/user/update-user.dto";
 import { setTimeout } from 'timers/promises';
-import { CacheProvider } from "../contracts/cache-provider.interface";
+import { ICacheProvider } from "../contracts/cache-provider.interface";
 
 export class UserService {
     
     constructor(
         private readonly userRepository: IUserRepository,
-        private readonly cacheProvider: CacheProvider
+        private readonly cacheProvider: ICacheProvider
     ) {}
     
     async getAll(): Promise<User[]> {
@@ -24,7 +24,7 @@ export class UserService {
             return JSON.parse(cachedUsers);
         } 
 
-        await setTimeout(20000);
+        await setTimeout(2000);
 
         const users = await this.userRepository.getAll();
 
@@ -32,7 +32,7 @@ export class UserService {
             throw new NotFoundError({ message: "No users found" });
         }
 
-        await this.cacheProvider.set(cacheKey, JSON.stringify(users), 60);
+        await this.cacheProvider.set(cacheKey, JSON.stringify(users), 120);
 
         return users;
     }
@@ -45,15 +45,28 @@ export class UserService {
         }
         
         const user = await this.userRepository.create(data);
+
+        this.cacheProvider.del('users:all');
+
         return user;
     }
 
     async findById(id: number): Promise<User> {
+
+        const cachedKey = `users:${id}`;
+        const cachedUser = await this.cacheProvider.get(cachedKey);
+
+        if (cachedUser) {
+            return JSON.parse(cachedUser);
+        }
+
         const user = await this.userRepository.findById(id);
         
         if (!user || !user.id ) {
             throw new NotFoundError({message: "User not found"});
         }
+
+        await this.cacheProvider.set(cachedKey, JSON.stringify(user), 120);
 
         return user;
     }
@@ -80,6 +93,9 @@ export class UserService {
             throw new NotFoundError({ message: "Not found user to update"});
         }
 
+        this.cacheProvider.del('users:all');
+        this.cacheProvider.del(`users:${id}`);
+
         return updatedUser;
     }
 
@@ -89,6 +105,8 @@ export class UserService {
         if (!user || !user.id ) {
             throw new NotFoundError({message: "User not found"});
         }
+
+        this.cacheProvider.del('users:all');
 
         await this.userRepository.delete(id);
     }

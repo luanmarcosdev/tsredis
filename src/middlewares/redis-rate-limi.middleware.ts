@@ -1,15 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
-import { redisClient } from '../infra/cache/redis';
+import { IRateLimitProvider } from '../contracts/rate-limit-provider.interface';
 
-export function rateLimit(maxRequests: number, windowSeconds: number) {
+export function rateLimit(
+  provider: IRateLimitProvider,
+  maxRequests: number,
+  ttl: number) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const ip = req.ip;
     const key = `rate_limit:${ip}`;
 
-    const requests = await redisClient.incr(key);
+    const requests = await provider.incr(key);
 
     if (requests === 1) {
-      await redisClient.expire(key, windowSeconds);
+      await provider.expire(key, ttl);
     }
 
     if (requests > maxRequests) {

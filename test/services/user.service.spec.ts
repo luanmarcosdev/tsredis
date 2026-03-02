@@ -1,14 +1,16 @@
 import { UserService } from "../../src/services/user.service";
-import { IUserRepository } from "../../src/repositories/user.repository.interface";
+import { IUserRepository } from "../../src/contracts/user-repository.interface";
 import { ConflictError } from "../../src/errors/conflict.error";
 import { NotFoundError } from "../../src/errors/not-found.error";
 import { BadRequestError } from "../../src/errors/bad-request.error";
 import { UserCreateDto } from "../../src/dtos/user/create-user.dto";
 import { User } from "../../src/database/entities/user.entity";
+import { ICacheProvider } from "../../src/contracts/cache-provider.interface";
 
 describe("UserService", () => {
   let userService: UserService;
   let userRepository: jest.Mocked<IUserRepository>;
+  let cacheProvider: jest.Mocked<ICacheProvider>;
 
   beforeEach(() => {
     userRepository = {
@@ -20,7 +22,13 @@ describe("UserService", () => {
       delete: jest.fn(),
     };
 
-    userService = new UserService(userRepository);
+    cacheProvider = {
+      get: jest.fn(),
+      set: jest.fn(),
+      del: jest.fn(),
+    };
+
+    userService = new UserService(userRepository, cacheProvider);
   });
 
   // getAll tests
