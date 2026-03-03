@@ -46,7 +46,7 @@ export class UserService {
         
         const user = await this.userRepository.create(data);
 
-        this.cacheProvider.del('users:all');
+        await this.cacheProvider.del('users:all');
 
         return user;
     }
@@ -106,8 +106,8 @@ export class UserService {
             throw new NotFoundError({message: "User not found"});
         }
 
-        this.cacheProvider.del('users:all');
-
         await this.userRepository.delete(id);
+        await this.cacheProvider.del('users:all');
+        await this.cacheProvider.del(`users:${id}`);
     }
 }
